@@ -32,7 +32,7 @@ function has_service_provider(service_name::String; client::Jedis.Client)
     return length(subs) == 1
 end
 
-function stream_negotiate_service(session_id::String, service_name::String; client::Jedis.Client)
+function negotiate_service(session_id::String, service_name::String; client::Jedis.Client)
     id_service_name = "$(session_id)__$(service_name)"
     return Jedis.publish(service_name, id_service_name; client)
 end
