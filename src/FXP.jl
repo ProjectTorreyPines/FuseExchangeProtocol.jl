@@ -16,16 +16,26 @@ function new_client_copy(client_in::Jedis.Client)
 end
 
 function Base.push!(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; data...)
+    raw_data = JSON.sprint(data)
+    return raw_push!(client, session_id, service_name, whoami, raw_data)
+end
+
+function raw_push!(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol, raw_data::Any)
     @assert whoami ∈ [:provider, :requestor]
     if whoami == :provider
         key = join((session_id, service_name, "pro2req"), sep)
     elseif whoami == :requestor
         key = join((session_id, service_name, "req2pro"), sep)
     end
-    return Jedis.lpush(key, JSON.sprint(data); client)
+    return Jedis.lpush(key, raw_data; client)
 end
 
 function Base.pop!(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
+    raw_data = raw_pop!(client, session_id, service_name, whoami; timeout, error_on_timeout)
+    return Dict(Symbol(k) => v for (k, v) in JSON.parse(raw_data))
+end
+
+function raw_pop!(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
     @assert whoami ∈ [:provider, :requestor]
     if whoami == :provider
         key = join((session_id, service_name, "req2pro"), sep)
@@ -40,7 +50,7 @@ function Base.pop!(client::Jedis.Client, session_id::String, service_name::Strin
             return nothing
         end
     end
-    return Dict(Symbol(k) => v for (k, v) in JSON.parse(data[2]))
+    return data[2]
 end
 
 """
@@ -51,12 +61,25 @@ end
     service_function(client::Jedis.Client, session_id::String, service_name::String; timeout::Float64=10.0)
 """
 function register_service(client::Jedis.Client, service_name::String, service_function::Function; timeout::Float64=10.0)
-    @async Jedis.subscribe(service_name; client) do msg
+    subscriber_client = new_client_copy(client)
+
+    @async Jedis.subscribe(service_name; client=subscriber_client) do msg
         session_id = msg[3]
         service_name = msg[2]
-        return service_function(client, session_id, service_name; timeout)
+        new_client = FXP.new_client_copy(client)
+        try
+            service_function(new_client, session_id, service_name; timeout)
+            return nothing
+        catch e
+            println(e)
+            rethrow(e)
+        finally
+            FXP.disconnect!(new_client)
+        end
     end
-    return Jedis.wait_until_subscribed(client)
+
+    Jedis.wait_until_subscribed(subscriber_client)
+    return subscriber_client
 end
 
 function has_service_provider(client::Jedis.Client, service_name::String)
