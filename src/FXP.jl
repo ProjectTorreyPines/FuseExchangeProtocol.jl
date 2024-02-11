@@ -15,12 +15,17 @@ function new_client_copy(client_in::Jedis.Client)
         client_in.username)
 end
 
-function Base.push!(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; data...)
+function json_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; data...)
     raw_data = JSON.sprint(data)
-    return raw_push!(client, session_id, service_name, whoami, raw_data)
+    return raw_push(client, session_id, service_name, whoami, raw_data)
 end
 
-function raw_push!(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol, raw_data::Any)
+function json_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
+    raw_data = raw_pop(client, session_id, service_name, whoami; timeout, error_on_timeout)
+    return Dict(Symbol(k) => v for (k, v) in JSON.parse(raw_data))
+end
+
+function raw_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol, raw_data::Any)
     @assert whoami ∈ [:provider, :requestor]
     if whoami == :provider
         key = join((session_id, service_name, "pro2req"), sep)
@@ -30,12 +35,7 @@ function raw_push!(client::Jedis.Client, session_id::String, service_name::Strin
     return Jedis.lpush(key, raw_data; client)
 end
 
-function Base.pop!(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
-    raw_data = raw_pop!(client, session_id, service_name, whoami; timeout, error_on_timeout)
-    return Dict(Symbol(k) => v for (k, v) in JSON.parse(raw_data))
-end
-
-function raw_pop!(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
+function raw_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
     @assert whoami ∈ [:provider, :requestor]
     if whoami == :provider
         key = join((session_id, service_name, "req2pro"), sep)
