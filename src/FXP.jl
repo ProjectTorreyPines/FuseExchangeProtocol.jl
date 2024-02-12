@@ -26,7 +26,7 @@ end
 Pushes serialized JSON data into a Redis list, using a key derived from session_id, service_name, and whoami
 """
 function json_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; data...)
-    raw_data = JSON.sprint(data)
+    raw_data = json_sprint(data)
     return raw_push(client, session_id, service_name, whoami, raw_data)
 end
 
@@ -136,11 +136,11 @@ function negotiate_service(client::Jedis.Client, session_id::String, service_nam
 end
 
 """
-    JSON.sprint(data, args...; kw...)
+    json_sprint(data, args...; kw...)
 
 Serializes data into a JSON string
 """
-function JSON.sprint(data, args...; kw...)
+function json_sprint(data, args...; kw...)
     buf = IOBuffer()
     JSON.print(buf, data, args...; kw...)
     return String(take!(buf))
