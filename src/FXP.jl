@@ -26,21 +26,23 @@ function json_pop(client::Jedis.Client, session_id::String, service_name::String
 end
 
 function raw_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol, raw_data::Any)
-    @assert whoami ∈ [:provider, :requestor]
     if whoami == :provider
         key = join((session_id, service_name, "pro2req"), sep)
     elseif whoami == :requestor
         key = join((session_id, service_name, "req2pro"), sep)
+    else
+        @assert whoami ∈ [:provider, :requestor]
     end
     return Jedis.lpush(key, raw_data; client)
 end
 
 function raw_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
-    @assert whoami ∈ [:provider, :requestor]
     if whoami == :provider
         key = join((session_id, service_name, "req2pro"), sep)
     elseif whoami == :requestor
         key = join((session_id, service_name, "pro2req"), sep)
+    else
+        @assert whoami ∈ [:provider, :requestor]
     end
     data = Jedis.brpop(key; timeout, client)
     if isempty(data)
