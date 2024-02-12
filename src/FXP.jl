@@ -84,6 +84,10 @@ end
     register_service(client::Jedis.Client, service_name::String, service_function::Function; timeout::Float64=10.0)
 
 Registers a service by subscribing to a Redis channel and invoking the service_function when a message is received
+
+The service_function must have the following call signature:
+
+    service_function(client::Jedis.Client, session_id::String, service_name::String; timeout::Float64)
 """
 function register_service(client::Jedis.Client, service_name::String, service_function::Function; timeout::Float64=10.0)
     subscriber_client = new_client_copy(client)
