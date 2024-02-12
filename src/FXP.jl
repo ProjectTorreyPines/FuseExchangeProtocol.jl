@@ -4,8 +4,13 @@ import JSON
 import Jedis
 import Jedis: Client, disconnect!
 
-const sep = "__"
+const sep = "__"  # Defines a constant separator used to construct Redis keys
 
+"""
+    new_client_copy(client_in::Jedis.Client)
+
+Creates a copy of a Jedis client with the same connection parameters.
+"""
 function new_client_copy(client_in::Jedis.Client)
     return Jedis.Client(;
         client_in.host,
@@ -15,16 +20,31 @@ function new_client_copy(client_in::Jedis.Client)
         client_in.username)
 end
 
+"""
+    json_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; data...)
+
+Pushes serialized JSON data into a Redis list, using a key derived from session_id, service_name, and whoami
+"""
 function json_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; data...)
     raw_data = JSON.sprint(data)
     return raw_push(client, session_id, service_name, whoami, raw_data)
 end
 
+"""
+    json_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
+
+Pops and deserializes JSON data from a Redis list, using a key derived from session_id, service_name, and whoami
+"""
 function json_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
     raw_data = raw_pop(client, session_id, service_name, whoami; timeout, error_on_timeout)
     return Dict(Symbol(k) => v for (k, v) in JSON.parse(raw_data))
 end
 
+"""
+    raw_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol, raw_data::Any)
+
+Pushes raw data into a Redis list, key determined by session_id, service_name, and whoami
+"""
 function raw_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol, raw_data::Any)
     if whoami == :provider
         key = join((session_id, service_name, "pro2req"), sep)
@@ -36,6 +56,11 @@ function raw_push(client::Jedis.Client, session_id::String, service_name::String
     return Jedis.lpush(key, raw_data; client)
 end
 
+"""
+    raw_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
+
+Pops raw data from a Redis list, key determined by session_id, service_name, and whoami
+"""
 function raw_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
     if whoami == :provider
         key = join((session_id, service_name, "req2pro"), sep)
@@ -58,9 +83,7 @@ end
 """
     register_service(client::Jedis.Client, service_name::String, service_function::Function; timeout::Float64=10.0)
 
-`service_function` must have the following call signature:
-
-    service_function(client::Jedis.Client, session_id::String, service_name::String; timeout::Float64=10.0)
+Registers a service by subscribing to a Redis channel and invoking the service_function when a message is received
 """
 function register_service(client::Jedis.Client, service_name::String, service_function::Function; timeout::Float64=10.0)
     subscriber_client = new_client_copy(client)
@@ -84,12 +107,22 @@ function register_service(client::Jedis.Client, service_name::String, service_fu
     return subscriber_client
 end
 
+"""
+    has_service_provider(client::Jedis.Client, service_name::String)
+
+Checks if there is a provider for a given service
+"""
 function has_service_provider(client::Jedis.Client, service_name::String)
     subs = Jedis.execute("PUBSUB CHANNELS $(service_name)", client)
     @assert length(subs) <= 1 "Too many service providers: $(subs)"
     return length(subs) == 1
 end
 
+"""
+    negotiate_service(client::Jedis.Client, session_id::String, service_name::String)
+
+Initializes service negotiation by cleaning up previous keys and publishing a request on a Redis channel
+"""
 function negotiate_service(client::Jedis.Client, session_id::String, service_name::String)
     key = join((session_id, service_name, "pro2req"), sep)
     Jedis.del(key; client)
@@ -101,7 +134,7 @@ end
 """
     JSON.sprint(data, args...; kw...)
 
-Return JSON represntation of data
+Serializes data into a JSON string
 """
 function JSON.sprint(data, args...; kw...)
     buf = IOBuffer()
