@@ -20,6 +20,8 @@ function new_client_copy(client_in::Jedis.Client)
         client_in.username)
 end
 
+export new_client_copy
+
 """
     json_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; data...)
 
@@ -30,6 +32,8 @@ function json_push(client::Jedis.Client, session_id::String, service_name::Strin
     return raw_push(client, session_id, service_name, whoami, raw_data)
 end
 
+export json_push
+
 """
     json_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
 
@@ -39,6 +43,8 @@ function json_pop(client::Jedis.Client, session_id::String, service_name::String
     raw_data = raw_pop(client, session_id, service_name, whoami; timeout, error_on_timeout)
     return Dict(Symbol(k) => v for (k, v) in JSON.parse(raw_data))
 end
+
+export json_pop
 
 """
     raw_push(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol, raw_data::Any)
@@ -55,6 +61,8 @@ function raw_push(client::Jedis.Client, session_id::String, service_name::String
     end
     return Jedis.lpush(key, raw_data; client)
 end
+
+export raw_push
 
 """
     raw_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
@@ -79,6 +87,8 @@ function raw_pop(client::Jedis.Client, session_id::String, service_name::String,
     end
     return data[2]
 end
+
+export raw_pop
 
 """
     register_service(client::Jedis.Client, service_name::String, service_function::Function; timeout::Float64=10.0)
@@ -111,6 +121,8 @@ function register_service(client::Jedis.Client, service_name::String, service_fu
     return subscriber_client
 end
 
+export register_service
+
 """
     has_service_provider(client::Jedis.Client, service_name::String)
 
@@ -121,6 +133,8 @@ function has_service_provider(client::Jedis.Client, service_name::String)
     @assert length(subs) <= 1 "Too many service providers: $(subs)"
     return length(subs) == 1
 end
+
+export has_service_provider
 
 """
     negotiate_service(client::Jedis.Client, session_id::String, service_name::String)
@@ -135,6 +149,8 @@ function negotiate_service(client::Jedis.Client, session_id::String, service_nam
     return Jedis.publish(service_name, session_id; client)
 end
 
+export negotiate_service
+
 """
     json_sprint(data, args...; kw...)
 
@@ -145,5 +161,10 @@ function json_sprint(data, args...; kw...)
     JSON.print(buf, data, args...; kw...)
     return String(take!(buf))
 end
+
+export json_sprint
+
+const document = Dict()
+document[Symbol(@__MODULE__)] = [name for name in Base.names(@__MODULE__; all=false, imported=false) if name != Symbol(@__MODULE__)]
 
 end # module FXP
