@@ -1,4 +1,4 @@
-module FXP
+module FuseExchangeProtocol
 
 import JSON
 import Jedis
@@ -105,7 +105,7 @@ function register_service(client::Jedis.Client, service_name::String, service_fu
     @async Jedis.subscribe(service_name; client=subscriber_client) do msg
         session_id = msg[3]
         service_name = msg[2]
-        new_client = FXP.new_client_copy(client)
+        new_client = new_client_copy(client)
         try
             service_function(new_client, session_id, service_name; timeout)
             return nothing
@@ -113,7 +113,7 @@ function register_service(client::Jedis.Client, service_name::String, service_fu
             println(e)
             rethrow(e)
         finally
-            FXP.disconnect!(new_client)
+            disconnect!(new_client)
         end
     end
 
@@ -167,4 +167,4 @@ export json_sprint
 const document = Dict()
 document[Symbol(@__MODULE__)] = [name for name in Base.names(@__MODULE__; all=false, imported=false) if name != Symbol(@__MODULE__)]
 
-end # module FXP
+end # module FuseExchangeProtocol

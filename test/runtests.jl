@@ -1,6 +1,6 @@
 import Pkg
 Pkg.activate(@__DIR__)
-import FXP
+import FuseExchangeProtocol as FXP
 import BenchmarkTools
 
 REDIS_HOST = "localhost"

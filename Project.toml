@@ -1,5 +1,5 @@
-name = "FXP"
-uuid = "e356478e-5a30-45f6-9775-70cc66e4fbd4"
+name = "FuseExchangeProtocol"
+uuid = "43dcb517-7681-482a-b959-351932bd0b36"
 authors = ["Orso Meneghini <orso82@gmail.com>"]
 version = "1.0.0"
 
@@ -10,3 +10,4 @@ Jedis = "b89ccfe0-2c5f-46f6-b89b-da3e1c2e286f"
 [compat]
 Jedis = "0.3"
 JSON = "0.21"
+julia = "1"

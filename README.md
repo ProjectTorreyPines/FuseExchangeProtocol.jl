@@ -1,4 +1,4 @@
-# FXP.jl
+# FuseExchangeProtocol.jl
 
 FUSE eXchange Protocol defines the handshake for processes interfacing with FUSE, for example for co-simulation purposes with a controller.
 
@@ -37,7 +37,7 @@ sequenceDiagram
     end
 ```
 
-## FXP builds on top of REDIS
+## FuseExchangeProtocol builds on top of REDIS
 * High Performance (operates in-memory) <1ms latency when run locally
 * Support large data volumes (<512 MB per message)
 * Distributed (ie. not geo-located)
@@ -55,6 +55,6 @@ sequenceDiagram
     * Unlike Hazelcast and etcd, which are more focused on distributed computing and configuration management respectively, REDIS offers a more general-purpose approach with its data structure support and performance.
 
 ## Online documentation
-For more details, see the [online documentation](https://projecttorreypines.github.io/FXP.jl/dev).
+For more details, see the [online documentation](https://projecttorreypines.github.io/FuseExchangeProtocol.jl/dev).
 
-![Docs](https://github.com/ProjectTorreyPines/FXP.jl/actions/workflows/make_docs.yml/badge.svg)
+![Docs](https://github.com/ProjectTorreyPines/FuseExchangeProtocol.jl/actions/workflows/make_docs.yml/badge.svg)
