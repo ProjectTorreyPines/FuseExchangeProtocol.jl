@@ -1,4 +1,4 @@
-# FuseExchangeProtocoleExchangeProtocol.jl Notice
+# FuseExchangeProtocol.jl Notice
 
 The purpose of this NOTICE file is to provide legal notices and acknowledgments that must be displayed to users in any derivative works or distributions. This file does not alter the terms of the Apache 2.0 license that governs the use and distribution of the FuseExchangeProtocol.jl package.
 

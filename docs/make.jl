@@ -1,5 +1,4 @@
-using Documenter
-import FuseExchangeProtocol
+using Documenter, FuseExchangeProtocol
 
 # Call functions
 open(joinpath(@__DIR__, "src/api.md"), "w") do f
