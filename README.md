@@ -1,4 +1,4 @@
-# FuseExchangeProtocol.jl
+# FuseExchangeProtocoleExchangeProtocol.jl
 
 FUSE eXchange Protocol defines the handshake for processes interfacing with FUSE, for example for co-simulation purposes with a controller.
 
