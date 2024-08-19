@@ -57,7 +57,7 @@ function raw_push(client::Jedis.Client, session_id::String, service_name::String
     elseif whoami == :requestor
         key = join((session_id, service_name, "req2pro"), sep)
     else
-        @assert whoami ∈ [:provider, :requestor]
+        @assert whoami ∈ [:provider, :requestor] "Unrecognized whoami=$(repr(whoami)) Must be ither :provider or :requestor"
     end
     return Jedis.lpush(key, raw_data; client)
 end
@@ -75,7 +75,7 @@ function raw_pop(client::Jedis.Client, session_id::String, service_name::String,
     elseif whoami == :requestor
         key = join((session_id, service_name, "pro2req"), sep)
     else
-        @assert whoami ∈ [:provider, :requestor]
+        @assert whoami ∈ [:provider, :requestor] "Unrecognized whoami=$(repr(whoami)) Must be ither :provider or :requestor"
     end
     data = Jedis.brpop(key; timeout, client)
     if isempty(data)
