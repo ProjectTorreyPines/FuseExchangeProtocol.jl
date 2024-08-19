@@ -103,6 +103,9 @@ The service_function must have the following call signature:
     service_function(client::Jedis.Client, session_id::String, service_name::String; timeout::Float64)
 """
 function register_service(client::Jedis.Client, service_name::String, service_function::Function; timeout::Float64=10.0)
+    
+    Jedis.unsubscribe(service_name; client)
+    
     subscriber_client = new_client_copy(client)
 
     @async Jedis.subscribe(service_name; client=subscriber_client) do msg
@@ -120,6 +123,7 @@ function register_service(client::Jedis.Client, service_name::String, service_fu
         end
     end
 
+    @info "Register service `$(service_name)` (subscribe to Redis channel `$(service_name)`)"
     Jedis.wait_until_subscribed(subscriber_client)
     return subscriber_client
 end
@@ -145,6 +149,7 @@ export has_service_provider
 Initializes service negotiation by cleaning up previous keys and publishing a request on a Redis channel
 """
 function negotiate_service(client::Jedis.Client, session_id::String, service_name::String)
+    @info "Negotiating FXP service `$(service_name)` with session ID `$(session_id)`"
     key = join((session_id, service_name, "pro2req"), sep)
     Jedis.del(key; client)
     key = join((session_id, service_name, "req2pro"), sep)
