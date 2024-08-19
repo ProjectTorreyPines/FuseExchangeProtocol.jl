@@ -41,6 +41,9 @@ Pops and deserializes JSON data from a Redis list, using a key derived from sess
 """
 function json_pop(client::Jedis.Client, session_id::String, service_name::String, whoami::Symbol; timeout::Float64, error_on_timeout::Bool=true)
     raw_data = raw_pop(client, session_id, service_name, whoami; timeout, error_on_timeout)
+    if raw_data === nothing
+        return nothing
+    end
     return Dict(Symbol(k) => v for (k, v) in JSON.parse(raw_data))
 end
 
