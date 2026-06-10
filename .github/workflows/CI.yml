@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+    tags: ['*']
+  pull_request:
+  workflow_dispatch: 
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  test:
+    name: Julia ${{ matrix.version }} - ubuntu-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['1']
+    steps:
+      - uses: actions/checkout@v4
+
+      # test/runtests.jl expects Redis at localhost:55000 with password "redispw"
+      - name: Start Redis
+        run: |
+          docker run -d --name fxp-redis -p 55000:6379 redis:7-alpine redis-server --requirepass redispw
+          timeout 30 bash -c 'until docker exec fxp-redis redis-cli -a redispw --no-auth-warning ping | grep -q PONG; do sleep 1; done'
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.version }}
+
+      - uses: julia-actions/cache@v2
+
+      - uses: julia-actions/julia-buildpkg@v1
+
+      - uses: julia-actions/julia-runtest@v1
