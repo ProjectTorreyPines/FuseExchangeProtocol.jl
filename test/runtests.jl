@@ -1,5 +1,3 @@
-import Pkg
-Pkg.activate(@__DIR__)
 import FuseExchangeProtocol as FXP
 import BenchmarkTools
 
