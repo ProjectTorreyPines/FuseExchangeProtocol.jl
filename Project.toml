@@ -1,13 +1,13 @@
 name = "FuseExchangeProtocol"
 uuid = "43dcb517-7681-482a-b959-351932bd0b36"
-authors = ["Orso Meneghini <orso82@gmail.com>"]
 version = "2.0.4"
+authors = ["Orso Meneghini <orso82@gmail.com>"]
 
 [deps]
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Jedis = "b89ccfe0-2c5f-46f6-b89b-da3e1c2e286f"
 
 [compat]
-JSON = "0.21"
+JSON = "0.21, 1"
 Jedis = "0.3"
 julia = "1"
