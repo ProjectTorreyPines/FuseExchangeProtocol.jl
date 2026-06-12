@@ -44,7 +44,7 @@ function json_pop(client::Jedis.Client, session_id::String, service_name::String
     if raw_data === nothing
         return nothing
     end
-    return Dict(Symbol(k) => v for (k, v) in JSON.parse(raw_data))
+    return Dict(Symbol(k) => v for (k, v) in JSON.parse(raw_data; allownan=true))
 end
 
 export json_pop
